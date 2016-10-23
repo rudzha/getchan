@@ -1,7 +1,6 @@
 import json
-from functools import partial
+import os
 from itertools import accumulate, repeat
-from time import sleep
 
 import requests
 
@@ -28,29 +27,23 @@ def make_request(url, headers=None):
 
 
 def get_thread_posts(response):
-    return tuple(response.json()['posts']) if response.status_code == 200 else ()
+    return tuple(response.json()['posts'])
 
 
+# TODO: Clean this mess up.
 def watch_thread(state):
-    t_request, timeout, thread, cdn_url, last_modified = state
-    if last_modified is not None:
-        header = {'If-Modified-Since': last_modified}
-    else:
-        header = {}
+    thread, _, t_request, last_modified = state
+    header = {'If-Modified-Since': last_modified} if last_modified is not None else {}
     response = t_request(header)
     if response.status_code == 200:
-        download = partial(download_content, cdn_url)
         last_modified = response.headers['Last-Modified']
-        new_thread = (get_thread_posts(response))
+        new_thread = get_thread_posts(response)
         new_posts = complement_right(thread, new_thread)
         new_content = filter(None, map(extract_content, new_posts))
-        list(map(download, new_content))
         combined_thread = thread + new_posts
-        sleep(timeout)
-        return t_request, timeout, combined_thread, cdn_url, last_modified
+        return combined_thread, tuple(new_content), t_request, last_modified
     elif response.status_code == 304:
-        sleep(timeout)
-        return t_request, timeout, thread, cdn_url, last_modified
+        return thread, (), t_request, last_modified
     else:
         raise StopIteration
 
@@ -59,20 +52,24 @@ def complement_right(a, b):
     return tuple(item for item in b if item not in a)
 
 
-def write_json(name, threads):
+def write_json(location, name, threads):
     post_dict = {"posts": list(threads)}
     post_json_string = json.dumps(post_dict)
-    with open("{0}.json".format(name), "w") as file:
+    with open("{0}/{1}.json".format(location, name), "w") as file:
         file.write(post_json_string)
 
 
-def download_content(url_fun, file_and_ext):
+def mkdir(board, thread):
+    path = "./{0}_{1}".format(board, thread)
+    (os.makedirs(path, exist_ok=True))
+    return path
+
+
+def download_content(url_fun, location, file_and_ext):
     file, ext = file_and_ext
-    print(file, ext)
-    print(url_fun(file, ext))
     r = make_request(url_fun(file, ext))
     if r.status_code == 200:
-        with open("{0}{1}".format(*file_and_ext), "wb") as f:
+        with open("{0}/{1}{2}".format(location, *file_and_ext), "wb") as f:
             for chunk in r.iter_content(1024):
                 f.write(chunk)
         return file
