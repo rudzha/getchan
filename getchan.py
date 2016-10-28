@@ -1,12 +1,7 @@
 import json
 import os
-from itertools import accumulate, repeat
-
+import copy
 import requests
-
-
-def iterate(f, x):
-    return accumulate(repeat(x), lambda fx, _: f(fx))
 
 
 def extract_thread_info(url):
@@ -26,8 +21,9 @@ def make_request(url, headers=None):
     return requests.get(url, headers=headers)
 
 
+# Preserve the original
 def get_thread_posts(response):
-    return tuple(response.json()['posts'])
+    return tuple(copy.deepcopy(response.json()['posts']))
 
 
 # TODO: Clean this mess up.
@@ -38,18 +34,14 @@ def watch_thread(state):
     if response.status_code == 200:
         last_modified = response.headers['Last-Modified']
         new_thread = get_thread_posts(response)
-        new_posts = complement_right(thread, new_thread)
-        new_content = filter(None, map(extract_content, new_posts))
+        new_posts = tuple(filter(lambda x: x not in thread, new_thread))
         combined_thread = thread + new_posts
-        return combined_thread, tuple(new_content), t_request, last_modified
+        print(new_posts)
+        return combined_thread, new_posts, t_request, last_modified
     elif response.status_code == 304:
         return thread, (), t_request, last_modified
     else:
         raise StopIteration
-
-
-def complement_right(a, b):
-    return tuple(item for item in b if item not in a)
 
 
 def write_json(location, name, threads):
@@ -66,13 +58,15 @@ def mkdir(board, thread):
 
 
 def download_content(url_fun, location, file_and_ext):
+    print(os.getpid(), file_and_ext)
     file, ext = file_and_ext
     r = make_request(url_fun(file, ext))
+    out_file = "{0}/{1}{2}".format(location, *file_and_ext)
     if r.status_code == 200:
-        with open("{0}/{1}{2}".format(location, *file_and_ext), "wb") as f:
+        with open(out_file, "wb") as f:
             for chunk in r.iter_content(1024):
                 f.write(chunk)
-        return file
+        return out_file
 
 
 def extract_content(item):
