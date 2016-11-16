@@ -7,7 +7,7 @@ import re
 
 # Oh no, the evil regex
 def extract_thread_info(url):
-    url_pattern = re.compile("^.*/([a-z])/thread/(\d+)")
+    url_pattern = re.compile("^.*/([a-z]+)/thread/(\d+)")
     matched_groups = re.match(url_pattern, url)
     return matched_groups.groups()
 

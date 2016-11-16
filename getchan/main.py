@@ -6,11 +6,15 @@ from toolz.itertoolz import iterate
 from multiprocessing import Pool
 from toolz.curried import map, filter, pipe
 
-from getchan import extract_thread_info, mkdir, make_api_url, make_cdn_url, download_content, write_json, make_request, watch_thread, extract_content
+from getchan.getchan import extract_thread_info, mkdir, make_api_url, make_cdn_url, download_content, write_json, make_request, watch_thread, extract_content
 
 
-def main(args):
-    thread_string = args.thread
+def main():
+    parser = argparse.ArgumentParser(description="Download 4chan threads")
+    parser.add_argument('thread', metavar='thread', help="Pass the link to the thread")
+    arguments = parser.parse_args()
+
+    thread_string = arguments.thread
     board, thread = extract_thread_info(thread_string)
 
     download_location = mkdir(board, thread)
@@ -43,8 +47,5 @@ def main(args):
     write_json_to_dir(thread, final_thread)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Download 4chan threads")
-    parser.add_argument('thread', metavar='thread', help="Pass the link to the thread")
-    arguments = parser.parse_args()
-    main(arguments)
+if __name__ == "__main__":
+    main()

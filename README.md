@@ -16,6 +16,5 @@ Fourchan thread downloader. Just a little Python experiment, that serves two pur
 # Roadmap
 1. Original post handling
 2. Incremental timeout
-3. Proper Python packaging, setuptools, etc
-4. Thread scanning service to check boards for threads containing specific words... like ylyl, pepe, dubs
-5. Generate HTML from JSON and images/viewer
+3. Thread scanning service to check boards for threads containing specific words... like ylyl, pepe, dubs
+4. Generate HTML from JSON and images/viewer
