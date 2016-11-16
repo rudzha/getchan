@@ -6,7 +6,7 @@ from toolz.itertoolz import iterate
 from multiprocessing import Pool
 from toolz.curried import map, filter, pipe
 
-from getchan import *
+from getchan import extract_thread_info, mkdir, make_api_url, make_cdn_url, download_content, write_json, make_request, watch_thread, extract_content
 
 
 def main(args):
@@ -30,13 +30,12 @@ def main(args):
     next(results_it)
 
     for result in results_it:
-        # Evil mutation, how to get rid, pls?
         final_result = result
         downloadable_content = pipe(result[1],
                                     map(extract_content),
                                     filter(None)
                                     )
-        
+
         download_pool.map_async(download, downloadable_content)
         sleep(30)
 

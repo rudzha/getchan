@@ -9,14 +9,13 @@ Fourchan thread downloader. Just a little Python experiment, that serves two pur
 * PyToolz
 
 # Usage
-1. python main.py [link to the thread]
+1. python main.py [url to a thread]
 2. Wait for the thread to 404
 3. Check out the freshly created thread directory
 
 # Roadmap
-1. Better url handling
-2. Original post handling
-3. Incremental timeout
-4. Proper Python packaging, setuptools, etc
-5. Thread scanning service to check boards for threads containing specific words... like ylyl, pepe, dubs
-6. Generate HTML from JSON and images
+1. Original post handling
+2. Incremental timeout
+3. Proper Python packaging, setuptools, etc
+4. Thread scanning service to check boards for threads containing specific words... like ylyl, pepe, dubs
+5. Generate HTML from JSON and images/viewer
